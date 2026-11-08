@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.4', '8.5']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: pcov
+
+      - run: composer install --no-interaction --no-progress
+
+      - name: Code style
+        run: composer cs:check
+        env:
+          PHP_CS_FIXER_IGNORE_ENV: 1
+
+      - name: Static analysis
+        run: composer analyse
+
+      - name: Tests
+        run: composer test:coverage
+
+      - name: Demo
+        run: composer demo
